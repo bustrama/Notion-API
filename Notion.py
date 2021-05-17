@@ -1,6 +1,8 @@
 from Database import Database
 import requests
 
+from Page import Page
+
 
 class Notion:
     def __init__(self, auth_token):
@@ -16,7 +18,10 @@ class Notion:
     def queryDatabase(self, database_id):
         r = requests.post('https://api.notion.com/v1/databases/' + database_id + '/query', headers=self.headers)
         if r.status_code == 200:
-            return r.json()
+            results = []
+            for result in r.json()['results']:
+                results.append(Page(result))
+            return results
         else:
             return 'Bad Request'
 
@@ -30,7 +35,7 @@ class Notion:
     def getPage(self, page_id):
         r = requests.get('https://api.notion.com/v1/pages/page_id' + page_id, headers=self.headers)
         if r.status_code == 200:
-            return r.json()
+            return Page(r.json())
         else:
             return 'Bad Request'
 

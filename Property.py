@@ -1,62 +1,49 @@
 # https://developers.notion.com/reference/database#database-property
 
-
 def GetProperty(json, prop_name):
     if json['type'] == PropertyType.Number:
         return Number(
-            json['id'],
-            prop_name,
-            json['number']['format']
+            json,
+            prop_name
         )
     elif json['type'] == PropertyType.Select:
         return Select(
-            json['id'],
-            prop_name,
-            json['select']['options']
+            json,
+            prop_name
         )
     elif json['type'] == PropertyType.Multi_select:
         return MultiSelect(
             json['id'],
             prop_name,
-            json['multi_select']['options']
+
         )
     elif json['type'] == PropertyType.Formula:
         return Formula(
-            json['id'],
-            prop_name,
-            json['formula']['expression']
+            json,
+            prop_name
         )
     elif json['type'] == PropertyType.Relation:
         return Relation(
-            json['id'],
-            prop_name,
-            json['database_id'],
-            json['synced_property_name'],
-            json['synced_property_id']
+            json,
+            prop_name
         )
     elif json['type'] == PropertyType.Rollup:
         return Rollup(
             json['id'],
-            prop_name,
-            json['relation_property_name'],
-            json['relation_property_id'],
-            json['rollup_property_name'],
-            json['rollup_property_id'],
-            json['function']
+            prop_name
         )
     else:
         return Property(
-            json['id'],
-            prop_name,
-            json['type']
+            json,
+            prop_name
         )
 
 
 class Property:
-    def __init__(self, prop_id, prop_name, prop_type):
-        self.id = prop_id
+    def __init__(self, json, prop_name):
+        self.id = json['id']
         self.name = prop_name
-        self.type = prop_type
+        self.type = json['type']
 
 
 class PropertyType:
@@ -82,9 +69,10 @@ class PropertyType:
 
 
 class Number(Property):
-    def __init__(self, prop_id, prop_name, number_format):
-        super().__init__(prop_id, prop_name, PropertyType.Number)
-        self.format = number_format
+    def __init__(self, json, prop_name):
+        super().__init__(json, prop_name)
+        if type(json['number']) is dict:
+            self.format = json['number']['format']
 
 
 class NumberFormat:
@@ -102,31 +90,33 @@ class NumberFormat:
 
 
 class Select(Property):
-    def __init__(self, prop_id, prop_name, options_arr):
-        super().__init__(prop_id, prop_name, PropertyType.Select)
+    def __init__(self, json, prop_name):
+        super().__init__(json, prop_name)
         self.options = []
-        for option in options_arr:
-            self.options.append(
-                Option(
-                    option['id'],
-                    option['name'],
-                    option['color']
+        if 'options' in json['select']:
+            for option in json['select']['options']:
+                self.options.append(
+                    Option(
+                        option['id'],
+                        option['name'],
+                        option['color']
+                    )
                 )
-            )
 
 
 class MultiSelect(Property):
-    def __init__(self, prop_id, prop_name, options_arr):
-        super().__init__(prop_id, prop_name, PropertyType.Multi_select)
+    def __init__(self, json, prop_name):
+        super().__init__(json, prop_name)
         self.options = []
-        for option in options_arr:
-            self.options.append(
-                Option(
-                    option['id'],
-                    option['name'],
-                    option['color']
+        if 'options' in json['multi_select']:
+            for option in json['multi_select']['options']:
+                self.options.append(
+                    Option(
+                        option['id'],
+                        option['name'],
+                        option['color']
+                    )
                 )
-            )
 
 
 class Option:
@@ -149,36 +139,30 @@ class OptionColor:
     Red = 'red'
 
 
-class Date(Property):
-    def __init__(self, prop_id, prop_name, json):
-        super().__init__(prop_id, prop_name, PropertyType.Date)
-        self.start = json['start']
-        self.end = json['end']
-
-
 class Formula(Property):
-    def __init__(self, prop_id,  prop_name, prop_expression):
-        super().__init__(prop_id, prop_name, PropertyType.Formula)
-        self.expression = prop_expression
+    def __init__(self, json,  prop_name):
+        super().__init__(json, prop_name)
+        if 'expression' in json['formula']:
+            self.expression = json['formula']['expression']
 
 
 class Relation(Property):
-    def __init__(self, prop_id, prop_name, db_id, synced_prop_name='', synced_prop_id=''):
-        super().__init__(prop_id, prop_name, PropertyType.Relation)
-        self.database_id = db_id
-        self.synced_property_name = synced_prop_name
-        self.synced_property_id = synced_prop_id
+    def __init__(self, json, prop_name):
+        super().__init__(json, prop_name)
+        if 'database_id' in json:
+            self.database_id = json['database_id']
+            self.synced_property_name = json['synced_property_name']
+            self.synced_property_id = json['synced_property_id']
 
 
 class Rollup(Property):
-    def __init__(self, prop_id, prop_name, relation_prop_name, relation_prop_id, rollup_prop_name,
-                 rollup_prop_id, prop_function):
-        super().__init__(prop_id, prop_name, PropertyType.Rollup)
-        self.relation_property_name = relation_prop_name
-        self.relation_property_id = relation_prop_id
-        self.rollup_property_name = rollup_prop_name
-        self.rollup_property_id = rollup_prop_id
-        self.function = prop_function
+    def __init__(self, json, prop_name):
+        super().__init__(json, prop_name)
+        self.relation_property_name = json['relation_property_name']
+        self.relation_property_id = json['relation_property_id']
+        self.rollup_property_name = json['rollup_property_name']
+        self.rollup_property_id = json['rollup_property_id']
+        self.function = json['function']
 
 
 class RollupFunction:

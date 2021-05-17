@@ -7,16 +7,16 @@ import RichText
 
 
 class Database:
-    def __init__(self, json):
+    def __init__(self, database):
         self.object = 'database'
-        self.id = json['id']
-        self.created_time = datetime.strptime(json['created_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
-        self.last_edited_time = datetime.strptime(json['last_edited_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
+        self.id = database['id']
+        self.created_time = datetime.strptime(database['created_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
+        self.last_edited_time = datetime.strptime(database['last_edited_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
 
         self.title = []
-        for rich_text in json['title']:
+        for rich_text in database['title']:
             self.title.append(RichText.GetRichText(rich_text))
 
         self.properties = []
-        for prop in json['properties']:
-            self.properties.append(Property.GetProperty(json['properties'][prop], prop))
+        for prop in database['properties']:
+            self.properties.append(Property.GetProperty(database['properties'][prop], prop))
